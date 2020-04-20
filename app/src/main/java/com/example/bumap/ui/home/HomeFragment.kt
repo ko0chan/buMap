@@ -10,8 +10,11 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.bumap.R
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
+import com.naver.maps.map.util.FusedLocationSource
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
+    private lateinit var locationSource: FusedLocationSource
+    private lateinit var naverMap: NaverMap
 
     private lateinit var homeViewModel: HomeViewModel
 
@@ -25,21 +28,45 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
         val fm = childFragmentManager
+
+        val options = NaverMapOptions()
+            .camera(CameraPosition(LatLng(36.839533958, 127.1846484710), 15.0))
+            .mapType(NaverMap.MapType.Basic)
+            .zoomControlEnabled(false)//초기 카메라 위치 설정
+            .locationButtonEnabled(true)
+            .zoomControlEnabled(false)
+
         val mapFragment = fm.findFragmentById(R.id.map) as MapFragment?
-            ?: MapFragment.newInstance().also {
+            ?: MapFragment.newInstance(options)
+                .also {
                 fm.beginTransaction().add(R.id.map, it).commit()
-            }
-//        val textView: TextView = root.findViewById(R.id.text_home)
-//        homeViewModel.text.observe(viewLifecycleOwner, Observer {
-//            textView.text = it
-//        })
+            }//NAVER MAP 객체생성
+        locationSource =
+            FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
         mapFragment.getMapAsync(this)
         return root
     }
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>,
+                                            grantResults: IntArray) {
+        if (locationSource.onRequestPermissionsResult(requestCode, permissions,
+    grantResults)) {
+        if (!locationSource.isCompassEnabled) { // 권한 거부됨
+            naverMap.locationTrackingMode = LocationTrackingMode.None
+        }
+        return
+    }
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+}
+
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
-        // ...
+        this.naverMap = naverMap
+        naverMap.locationSource = locationSource
+    }
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
     }
 }

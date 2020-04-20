@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
 
-
     <FrameLayout
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-<!--    <fragment xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--        android:id="@+id/map"-->
-<!--        android:name="com.naver.maps.map.MapFragment"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        app:navermap_latitude="36.839533958"-->
-<!--        app:navermap_longitude="127.1846484710"-->
-<!--        app:navermap_zoom="15"-->
-<!--        app:navermap_mapType="Basic"-->
-<!--        app:navermap_locationButtonEnabled="true"-->
-<!--        app:navermap_zoomControlEnabled="false"-->
-<!--        />-->
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

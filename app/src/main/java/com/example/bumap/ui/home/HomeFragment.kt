@@ -136,8 +136,31 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
+        val infoWindow = InfoWindow()
+        infoWindow.adapter = object : InfoWindow.DefaultTextAdapter(this!!.context!!) {
+            override fun getText(infoWindow: InfoWindow): CharSequence {
+                // 정보 창이 열린 마커의 tag를 텍스트로 노출하도록 반환
+                return infoWindow.marker?.tag as CharSequence? ?: ""
+            }
+        }
+
         this.naverMap = naverMap
         naverMap.locationSource = locationSource
+
+        // 마커를 클릭하면:
+        val listener = Overlay.OnClickListener { overlay ->
+            val marker = overlay as Marker
+
+            if (marker.infoWindow == null) {
+                // 현재 마커에 정보 창이 열려있지 않을 경우 엶
+                infoWindow.open(marker)
+            } else {
+                // 이미 현재 마커에 정보 창이 열려있을 경우 닫음
+                infoWindow.close()
+            }
+
+            true
+        }
         for(i in placeName.indices){
             val marker = Marker()
             marker.position = LatLng(lat[i], lng[i])
@@ -145,26 +168,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             marker.width = 80
             marker.height = 80
             marker.tag=placeName[i]
-
-            marker.setOnClickListener { overlay ->
-                if (marker.tag==placeName[i]) {
-                    marker.captionText = placeName[i]
-                    // 이벤트 소비, OnMapClick 이벤트는 발생하지 않음
-                    true
-                }
-                else{
-                    marker.captionText = " "
-                    false
-                }
-            }
-
             map.set(placeName[i],marker)
+            marker.onClickListener = listener
+
+
         }
-
-
-
-
-
 
     }
     companion object {

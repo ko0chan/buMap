@@ -1,5 +1,6 @@
 package com.example.bumap.ui.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,7 +25,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var locationSource: FusedLocationSource
     private lateinit var naverMap: NaverMap
 
-    var map: HashMap<String,Marker> = HashMap<String,Marker>()
+    var map: HashMap<String, Marker> = HashMap<String, Marker>()
     var placeName = arrayOf(
         "학생복지관",
         "목양관",
@@ -91,9 +92,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
@@ -111,8 +112,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = fm.findFragmentById(R.id.map) as MapFragment?
             ?: MapFragment.newInstance(options)
                 .also {
-                fm.beginTransaction().add(R.id.map, it).commit()
-            }//NAVER MAP 객체생성
+                    fm.beginTransaction().add(R.id.map, it).commit()
+                }//NAVER MAP 객체생성
         locationSource =
             FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
@@ -120,11 +121,17 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         return root
     }
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>,
-                                            grantResults: IntArray) {
-        if (locationSource.onRequestPermissionsResult(requestCode, permissions,
-                grantResults)) {
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (locationSource.onRequestPermissionsResult(
+                requestCode, permissions,
+                grantResults
+            )
+        ) {
             if (!locationSource.isCompassEnabled) { // 권한 거부됨
                 naverMap.locationTrackingMode = LocationTrackingMode.None
             }
@@ -151,30 +158,40 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         val listener = Overlay.OnClickListener { overlay ->
             val marker = overlay as Marker
 
-            if (marker.infoWindow == null) {
-                // 현재 마커에 정보 창이 열려있지 않을 경우 엶
+            if (marker.infoWindow == null) {// 현재 마커에 정보 창이 열려있지 않을 경우 엶
                 infoWindow.open(marker)
-            } else {
-                // 이미 현재 마커에 정보 창이 열려있을 경우 닫음
+                infoWindow.onClickListener = Overlay.OnClickListener {
+                    val intent = Intent(context,BuildingInfo::class.java)
+                    intent.putExtra("lat",marker.position.latitude)
+                    intent.putExtra("lng",marker.position.longitude)
+
+                    startActivity(intent)
+
+                    true
+                }
+
+
+            } else {// 이미 현재 마커에 정보 창이 열려있을 경우 닫음
                 infoWindow.close()
             }
 
             true
         }
-        for(i in placeName.indices){
+        for (i in placeName.indices) {
             val marker = Marker()
             marker.position = LatLng(lat[i], lng[i])
             marker.map = naverMap
             marker.width = 80
             marker.height = 80
-            marker.tag=placeName[i]
-            map.set(placeName[i],marker)
+            marker.tag = placeName[i]
+            map.set(placeName[i], marker)
             marker.onClickListener = listener
 
 
         }
 
     }
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
     }

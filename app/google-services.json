@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "192056123693",
+    "firebase_url": "https://bumap-c55a7.firebaseio.com",
+    "project_id": "bumap-c55a7",
+    "storage_bucket": "bumap-c55a7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192056123693:android:310a9a3fcb50e4e98073a4",
+        "android_client_info": {
+          "package_name": "com.example.bumap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192056123693-80pqfl5rgm7oea7hj8m1t4e682bqmb34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEJmy3udItkKI8vsRBOBu4H7eod8hEylQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192056123693-80pqfl5rgm7oea7hj8m1t4e682bqmb34.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

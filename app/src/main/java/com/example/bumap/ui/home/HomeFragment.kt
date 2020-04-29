@@ -1,5 +1,6 @@
 package com.example.bumap.ui.home
 
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,10 @@ import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import com.example.bumap.R
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
 import com.naver.maps.map.overlay.Align
@@ -103,7 +108,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         val options = NaverMapOptions()
             .camera(CameraPosition(LatLng(36.839533958, 127.1846484710), 15.0))
-            .mapType(NaverMap.MapType.Basic)
+            .mapType(NaverMap. MapType.Basic)
             .zoomControlEnabled(false)//초기 카메라 위치 설정
             .locationButtonEnabled(true)
             .zoomControlEnabled(false)
@@ -143,6 +148,35 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
+        // Write a message to the database
+        // [START write_message]
+        // Write a message to the database
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("학생복지관")
+        myRef.child("high").setValue("5")
+        myRef.child("low").setValue("-1")
+        myRef.child("floor").child("B1").child("B105").child("name").setValue("복사점")
+        myRef.child("floor").child("B1").child("B105").child("location").child("lat").setValue("36.840666")
+        myRef.child("floor").child("B1").child("B105").child("location").child("lng").setValue("127.182209")
+        // [END write_message]
+
+        // [START read_message]
+        // Read from the database
+        myRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                val value = dataSnapshot.getValue(String::class.java)
+                Log.d(TAG, "Value is: $value")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException())
+            }
+        })
+        // [END read_message]
+
         val infoWindow = InfoWindow()
         infoWindow.adapter = object : InfoWindow.DefaultTextAdapter(this!!.context!!) {
             override fun getText(infoWindow: InfoWindow): CharSequence {
@@ -181,7 +215,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             val marker = Marker()
             marker.position = LatLng(lat[i], lng[i])
             marker.map = naverMap
-            marker.width = 80
+            marker.width = 60
             marker.height = 80
             marker.tag = placeName[i]
             map.set(placeName[i], marker)

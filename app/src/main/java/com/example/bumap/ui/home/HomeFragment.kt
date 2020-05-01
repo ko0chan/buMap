@@ -148,26 +148,33 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
-        // Write a message to the database
         // [START write_message]
         // Write a message to the database
         val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("학생복지관")
-        myRef.child("high").setValue("5")
-        myRef.child("low").setValue("-1")
-        myRef.child("floor").child("B1").child("B105").child("name").setValue("복사점")
-        myRef.child("floor").child("B1").child("B105").child("location").child("lat").setValue("36.840666")
-        myRef.child("floor").child("B1").child("B105").child("location").child("lng").setValue("127.182209")
+        val myRef = database.reference
+
+//        myRef.child("email").setValue("user.email")
+//        myRef.child("phone").setValue("user.phoneName")
+//        myRef.setValue("Hello, World!")
         // [END write_message]
 
         // [START read_message]
         // Read from the database
-        myRef.addValueEventListener(object : ValueEventListener {
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                val value = dataSnapshot.getValue(String::class.java)
-                Log.d(TAG, "Value is: $value")
+//                val value = dataSnapshot.getValue(String::class.java)
+//                Log.d(TAG, "Value is: $value")
+                for (snapshot in dataSnapshot.children) {
+                    Log.d("ttest1", snapshot.toString())
+                    for (snapshot1 in snapshot.children) {
+                        Log.d("ttest2", snapshot1.toString())
+                        for (snapshot2 in snapshot1.children) {
+                            Log.d("ttest3", snapshot2.toString())
+                        }
+                    }
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -176,6 +183,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             }
         })
         // [END read_message]
+
 
         val infoWindow = InfoWindow()
         infoWindow.adapter = object : InfoWindow.DefaultTextAdapter(this!!.context!!) {

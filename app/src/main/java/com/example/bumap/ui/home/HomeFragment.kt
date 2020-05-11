@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import com.example.bumap.R
@@ -17,90 +16,24 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
-import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.InfoWindow
-import com.naver.maps.map.overlay.InfoWindow.DefaultTextAdapter
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
-import kotlinx.android.synthetic.main.fragment_home.*
 import java.util.*
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
     private lateinit var locationSource: FusedLocationSource
     private lateinit var naverMap: NaverMap
 
-    var map: HashMap<String, Marker> = HashMap<String, Marker>()
-    var placeName = arrayOf(
-        "학생복지관",
-        "목양관",
-        "백석홀",
-        "인성관",
-        "은혜관",
-        "자유관",
-        "창조관",
-        "백석학술정보관",
-        "지혜관",
-        "진리관",
-        "교수회관",
-        "음악관",
-        "승리관",
-        "생활관",
-        "글로벌외식산업관",
-        "본부동",
-        "체육관",
-        "조형관",
-        "예술대학동"
-    )
-    var lat = doubleArrayOf(
-        36.84067149455031,
-        36.84096804048713,
-        36.83949817622067,
-        36.83943918986522,
-        36.83865921671607,
-        36.8385077093117,
-        36.83750497408212,
-        36.83779665070615,
-        36.83875974818527,
-        36.840167531007694,
-        36.83971621180102,
-        36.84012975281361,
-        36.84180402931098,
-        36.84256247647251,
-        36.837169093598945,
-        36.83930008181875,
-        36.841361075498014,
-        36.840873386391095,
-        36.8387467774056
-    )
-    var lng = doubleArrayOf(
-        127.18245069150657,
-        127.18362033438393,
-        127.18256704147348,
-        127.1835171044122,
-        127.18196470541153,
-        127.1831779542112,
-        127.18230471070564,
-        127.1839869000512,
-        127.18429855933977,
-        127.18453879140225,
-        127.18478214426176,
-        127.18528504289549,
-        127.1857502675112,
-        127.18512338682183,
-        127.18493789329511,
-        127.18597708221137,
-        127.1872479173602,
-        127.18844000257769,
-        127.187425511696
-    )
-
+    var map: HashMap<String, Position> = HashMap<String, Position>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
@@ -122,8 +55,39 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         locationSource =
             FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
 
+        // [START write_message]
+        // Write a message to the database
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.reference
 
-        mapFragment.getMapAsync(this)
+
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                var portion: Position = Position()
+                var a = ""
+                for (snapshot in dataSnapshot.children) {
+                    a=snapshot.key.toString()
+
+                    for (snapshot1 in snapshot.children) {
+                        portion = snapshot1.getValue(Position::class.java) as Position
+                        map[a] = portion
+
+                    }
+                }
+                mapFragment.getMapAsync(this@HomeFragment)
+            }
+
+
+
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException())
+            }
+        })
+        // [END read_message]
         return root
     }
 
@@ -148,45 +112,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
-        // [START write_message]
-        // Write a message to the database
-        val database = FirebaseDatabase.getInstance()
-        val myRef = database.reference
-
-//        myRef.child("email").setValue("user.email")
-//        myRef.child("phone").setValue("user.phoneName")
-//        myRef.setValue("Hello, World!")
-        // [END write_message]
-
-        // [START read_message]
-        // Read from the database
-        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-//                val value = dataSnapshot.getValue(String::class.java)
-//                Log.d(TAG, "Value is: $value")
-                for (snapshot in dataSnapshot.children) {
-                    Log.d("ttest1", snapshot.toString())
-                    for (snapshot1 in snapshot.children) {
-                        Log.d("ttest2", snapshot1.toString())
-                        for (snapshot2 in snapshot1.children) {
-                            Log.d("ttest3", snapshot2.toString())
-                        }
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException())
-            }
-        })
-        // [END read_message]
-
-
         val infoWindow = InfoWindow()
-        infoWindow.adapter = object : InfoWindow.DefaultTextAdapter(this!!.context!!) {
+        infoWindow.adapter = object : InfoWindow.DefaultTextAdapter(this.context!!) {
             override fun getText(infoWindow: InfoWindow): CharSequence {
                 // 정보 창이 열린 마커의 tag를 텍스트로 노출하도록 반환
                 return infoWindow.marker?.tag as CharSequence? ?: ""
@@ -219,17 +146,14 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
             true
         }
-        for (i in placeName.indices) {
+        for (i in map.keys) {
             val marker = Marker()
-            marker.position = LatLng(lat[i], lng[i])
+            marker.position = LatLng(map[i]!!.lat,map.get(i)!!.lng)
             marker.map = naverMap
             marker.width = 60
             marker.height = 80
-            marker.tag = placeName[i]
-            map.set(placeName[i], marker)
+            marker.tag = i
             marker.onClickListener = listener
-
-
         }
 
     }

@@ -66,20 +66,19 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                var portion: Position = Position()
-                var a = ""
+                var portion:Position
                 for (snapshot in dataSnapshot.children) {
-                    a=snapshot.key.toString()
-
                     for (snapshot1 in snapshot.children) {
-                        portion = snapshot1.getValue(Position::class.java) as Position
-                        map[a] = portion
+                        if (snapshot1.key.equals("location")) {
+                            portion = snapshot1.getValue((Position::class.java)) as Position
+                            portion.placename = snapshot.key.toString()
+                            map[portion.placename] = portion
+                        }
 
                     }
                 }
                 mapFragment.getMapAsync(this@HomeFragment)
             }
-
 
 
             override fun onCancelled(error: DatabaseError) {
@@ -131,6 +130,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 infoWindow.open(marker)
                 infoWindow.onClickListener = Overlay.OnClickListener {
                     val intent = Intent(context,BuildingInfo::class.java)
+                    intent.putExtra("placename",marker.tag.toString())
                     intent.putExtra("lat",marker.position.latitude)
                     intent.putExtra("lng",marker.position.longitude)
 
@@ -148,7 +148,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         }
         for (i in map.keys) {
             val marker = Marker()
-            marker.position = LatLng(map[i]!!.lat,map.get(i)!!.lng)
+            marker.position = LatLng(map[i]!!.lat.toDouble(),map.get(i)!!.lng.toDouble())
             marker.map = naverMap
             marker.width = 60
             marker.height = 80

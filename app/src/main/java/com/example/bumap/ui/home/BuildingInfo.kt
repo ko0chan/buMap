@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -54,6 +55,8 @@ class BuildingInfo : FragmentActivity(), OnMapReadyCallback {
             ?: MapFragment.newInstance(options).also {
                 fm.beginTransaction().add(R.id.map, it).commit()
             }
+
+
         // [START write_message]
         // Write a message to the database
         val database = FirebaseDatabase.getInstance()
@@ -61,17 +64,29 @@ class BuildingInfo : FragmentActivity(), OnMapReadyCallback {
 
 
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-
+            var f = FloorNumber()
+            var rn = RoomNumber()
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
+                var data = arrayListOf<String>()
                 for (snapshot in dataSnapshot.children) {
                     if (snapshot.key.equals("floor")) {
                         for (snapshot2 in snapshot.children) {
                             val btn = Button(this@BuildingInfo).apply {
                                 text = snapshot2.key.toString()
                             }
+                            for (snapshot3 in snapshot2.children) {
+                                rn.room[snapshot3.key.toString()] = snapshot3.getValue(Room::class.java) as Room
+                                data.add(snapshot3.child("name").value.toString())
+                            }
+                            f.rn[snapshot2.key.toString()] = rn
+
+
                             test1.addView(btn)
+//                            data.add(snapshot2.key.toString())
+                            listId.adapter = ArrayAdapter(this@BuildingInfo,android.R.layout.simple_list_item_1,data)
+                            Log.d("ttest",snapshot2.toString())
                         }
                     }
                 }

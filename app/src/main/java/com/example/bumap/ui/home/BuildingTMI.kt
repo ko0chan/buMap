@@ -13,3 +13,18 @@ class Position{
     var lng: String = ""
 
 }
+
+class FloorNumber{
+//    lateinit var fn :FloorNumber
+    var rn: HashMap<String, RoomNumber> = HashMap()
+}
+
+class RoomNumber{
+//    lateinit var roomnumber :RoomNumber
+    var room: HashMap<String, Room> = HashMap()
+}
+
+class Room{
+    lateinit var location :Position
+    lateinit var name : String
+}

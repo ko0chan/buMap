@@ -31,6 +31,7 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_buliding.*
 import kotlinx.android.synthetic.main.home_buliding.view.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class BuildingInfo : FragmentActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +43,7 @@ class BuildingInfo : FragmentActivity(), OnMapReadyCallback {
         val lat1 = intent.getDoubleExtra("lat", 0.0)
         val lng1 = intent.getDoubleExtra("lng", 0.0)
         val placename1 = intent.getStringExtra("placename")!!
-        buildingName.setText(placename1)
+        buildingName.text = placename1
         val options = NaverMapOptions()
             .camera(CameraPosition(LatLng(lat1, lng1), 17.0))
             .mapType(NaverMap.MapType.Basic)
@@ -64,29 +65,34 @@ class BuildingInfo : FragmentActivity(), OnMapReadyCallback {
 
 
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            var f = FloorNumber()
-            var rn = RoomNumber()
+//            var f = FloorNumber()
+//            var rn = RoomNumber()
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 var data = arrayListOf<String>()
+                var map123: HashMap<String, ArrayList<String>> = HashMap()
                 for (snapshot in dataSnapshot.children) {
                     if (snapshot.key.equals("floor")) {
                         for (snapshot2 in snapshot.children) {
+                            data = arrayListOf<String>()
+                            for ((Index,snapshot3) in snapshot2.children.withIndex()) {
+//                                rn.room[snapshot3.key.toString()] = snapshot3.getValue(Room::class.java) as Room
+                                data.add(snapshot2.key.toString() + "층_" + snapshot3.child("name").value.toString())
+                            }
+                            map123[snapshot2.key.toString()] = data
+//                            f.rn[snapshot2.key.toString()] = rn
+
+
                             val btn = Button(this@BuildingInfo).apply {
                                 text = snapshot2.key.toString()
                             }
-                            for (snapshot3 in snapshot2.children) {
-                                rn.room[snapshot3.key.toString()] = snapshot3.getValue(Room::class.java) as Room
-                                data.add(snapshot3.child("name").value.toString())
-                            }
-                            f.rn[snapshot2.key.toString()] = rn
-
-
                             test1.addView(btn)
-//                            data.add(snapshot2.key.toString())
-                            listId.adapter = ArrayAdapter(this@BuildingInfo,android.R.layout.simple_list_item_1,data)
-                            Log.d("ttest",snapshot2.toString())
+                            btn.setOnClickListener(){
+                                listId.adapter = ArrayAdapter(this@BuildingInfo,android.R.layout.simple_list_item_1,
+                                    map123[btn.text]!!
+                                )
+                            }
                         }
                     }
                 }
